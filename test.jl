@@ -18,7 +18,7 @@ function run()
         #print(datetime.fromtimestamp(timestamp[0]))
 
         p = heatmap(data, color=:viridis)
-        savefig(p, "heatmap.png")
+        savefig(p, "./figs/heatmap.png")
 
     end
 

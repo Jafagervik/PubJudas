@@ -4,12 +4,14 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
 import torch.multiprocessing as mp
-from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 import os
 
-from .data import PubDASDataset
+from data import PubDASDataset
+from engine import Engine
+from plots import *
+from ae import AE
 
 import numpy as np
 
@@ -24,33 +26,6 @@ def ddp_setup(rank, world_size):
     init_process_group(backend="nccl", rank=rank, world_size=world_size)
     torch.cuda.set_device(rank)
 
-class Engine:
-    def __init__(self) -> None:
-        self.model = F.linear(1, 12)   
-        
-    def _run_batch(self): 
-        pass 
-
-    def _run_epoch(self, epoch: int):
-        pass
-
-    def _save_checkpoint(self, epochs: int):
-        for epoch in range(epochs):
-            self._run_epoch(epoch)
-    
-    def train(self, epoch: int): 
-        ckp = self.model.module.state_dict()
-        PATH = "checkpoint.pt"
-        torch.save(ckp, PATH)
-        print(f"Epoch {epoch} | Training checkpoint saved at {PATH}")
-
-class AE(nn.Module):
-    """Some Information about MyModule"""
-    def __init__(self):
-        super(AE, self).__init__()
-
-    def forward(self, x):
-        return x
 
 def load_train_objects(device):
     train_set = None
@@ -58,21 +33,24 @@ def load_train_objects(device):
     optimizer = torch.Adam(model.parameters(), lr=1e-2)
     return train_set, model, optimizer
 
-def prepare_dataloader(dataset: Dataset, batch_size: int):
-    """
-        Distributred Datasampler for dataloader
-    """
-    return DataLoader(
-        dataset,
-        batch_size,
-        pin_memory=True,
-        shuffle=False, 
-        sampler=DistributedSampler
-    )
 
+
+def parse_args():
+    import argparse
+
+    parser = argparse.ArgumentParser(description='simple distributed training job')
+    parser.add_argument('total_epochs', type=int, help='Total epochs to train the model')
+    parser.add_argument('save_every', type=int, help='How often to save a snapshot')
+    parser.add_argument('--batch_size', default=32, type=int, help='Input batch size on each device (default: 32)')
+    args = parser.parse_args()
+
+    return args
 
 def main():
     pass 
 
 if __name__ == "__main__":
+    parser = parse_args()
+    world_size = torch.cuda.device_count()
+    print(world_size)
     main()

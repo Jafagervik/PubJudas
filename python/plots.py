@@ -28,6 +28,9 @@ def plot_vae_losses(losses: dict, save: bool = False):
 def plot_anomalies(anomalies, save: bool = False):
     pass
 
-data = torch.rand(10, 10, dtype=torch.float32)
-torch.rand
-plot_dasmap(data)
+import requests 
+
+if __name__ == "__main__":
+    data = torch.rand(10, 10, dtype=torch.float32)
+    torch.rand
+    plot_dasmap(data)

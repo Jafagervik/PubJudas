@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
+import os
 
 def download_globus_das_data(url: str):
     """Download das dataset
@@ -11,14 +12,16 @@ def download_globus_das_data(url: str):
 
 class PubDASDataset(Dataset):
     """Some Information about MyDataset"""
-    def __init__(self):
+    def __init__(self, dir: str = "../data"):
         super(PubDASDataset, self).__init__()
+        self.DIR = dir
 
     def __getitem__(self, index):
         return 
 
     def __len__(self):
-        return 
+        return len([name for name in os.listdir(self.DIR) if os.path.isfile(os.path.join(DIR, name))])
+
 
 def prepare_dataloader(dataset: Dataset, batch_size: int):
     """

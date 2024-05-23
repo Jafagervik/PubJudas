@@ -34,7 +34,6 @@ def load_train_objects(device):
     return train_set, model, optimizer
 
 
-
 def parse_args():
     import argparse
 

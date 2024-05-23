@@ -1,6 +1,14 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
+def download_globus_das_data(url: str):
+    """Download das dataset
+
+    Args:
+        url (str): Web url for globus data
+    """
+    pass
+
 class PubDASDataset(Dataset):
     """Some Information about MyDataset"""
     def __init__(self):

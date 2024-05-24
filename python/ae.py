@@ -30,7 +30,7 @@ class Encoder(nn.Module):
         return x
 
 class Decoder(nn.Module):
-    def __init__(self, dims: list[int], act = nn.ReLU):
+    def __init__(self, dims: list[int], act = nn.ReLU(inplace=True)):
         super().__init__()
         assert len(dims) == 4, "Too many sizes"
         self.fc1 = nn.Linear(dims[0], dims[1])
@@ -39,7 +39,7 @@ class Decoder(nn.Module):
         self.act = act
 
     def forward(self, x):
-        x = reshape_matrix(x)
+        x = x.flatten()
         x = self.fc1(x)
         x = self.act(x)
         
@@ -76,6 +76,9 @@ if __name__ == "__main__":
     summary(model, (M, N))
 
 def old():
+    #import seaborn as sns
+    #sns.heatmap(img.detach().cpu(), cmap="coolwarm")
+    #plt.show()
     input_size = M * N
     hidden_size = 1024
     num_layers = 4
@@ -83,11 +86,7 @@ def old():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     img = torch.rand(M, N, dtype=torch.float32, device=device)
 
-    #import seaborn as sns
-    #sns.heatmap(img.detach().cpu(), cmap="coolwarm")
-    #plt.show()
 
-    l = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers).to(device)
 
 
     print(img.size())

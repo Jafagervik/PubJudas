@@ -58,9 +58,8 @@ if __name__ == "__main__":
     EPS = 5 
     loss = None
 
-    for epoch in tqdm(range(EPS)):
-
-        for d
+    for epoch in range(EPS):
+        
 
 
 

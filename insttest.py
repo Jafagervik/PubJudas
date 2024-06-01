@@ -1,5 +1,7 @@
 import os
+from datetime import datetime
 
+import h5py
 import requests
 
 
@@ -18,9 +20,6 @@ def format_url(url: str):
     name = name.split("_")
     return name[-2] + "_" + name[-1]
     # return os.path.splitext(name)[0]
-
-
-from datetime import datetime
 
 
 def get_datetime_file(file_name: str):

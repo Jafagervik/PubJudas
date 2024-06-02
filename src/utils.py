@@ -1,7 +1,9 @@
 import argparse
 import os
+import random as rnd
 
 import torch
+import yaml
 from torch import Tensor
 
 
@@ -19,6 +21,17 @@ def get_devices():
         print(torch.cuda.get_device_name(i))
 
 
+def seed_all(seed: int):
+    """Seed all random number generators."""
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.cuda.manual_seed(seed)
+    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = False
+    rnd.seed(seed)
+    # os.environ["PYTHONHASHSEED"] = str(seed)
+
+
 def get_cpu_and_gpu_count():
     """CPU and GPU count for mpispawn and torchrun"""
     return os.cpu_count(), torch.cuda.device_count()
@@ -27,30 +40,27 @@ def get_cpu_and_gpu_count():
 def parse_args():
     parser = argparse.ArgumentParser(description="PyTorch distributed training")
 
+    parser.add_argument(
+        "--config",
+        "-c",
+        dest="filename",
+        metavar="FILE",
+        help="path to the config file",
+        default="configs/vae.yaml",
+    )
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--world_size", type=int, default=1)
     parser.add_argument("--backend", type=str, default="nccl")
     parser.add_argument("--master_addr", type=str, default="127.0.0.1")
     parser.add_argument("--master_port", type=str, default="12355")
-    parser.add_argument("--epochs", type=int, default=10)
-    parser.add_argument("--batch_size", type=int, default=5)
-    parser.add_argument("--lr", type=float, default=0.01)
-    parser.add_argument("--momentum", type=float, default=0.9)
-    parser.add_argument("--seed", type=int, default=1234)
-    parser.add_argument("--log_interval", type=int, default=10)
-    parser.add_argument("--save_model", type=bool, default=True)
-    parser.add_argument("--save_path", type=str, default="model.pth")
-    parser.add_argument("--load_model", type=bool, default=False)
 
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    a = torch.rand(4, 4, dtype=torch.float32)
-
-    print(a, a.shape, a.size())
-
-    a = a.flatten()
-
-    print(a)
-    print(a, a.shape, a.size())
+def get_config(path: str):
+    with open(path, "r") as f:
+        try:
+            return yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            print(exc)
+            exit(1)

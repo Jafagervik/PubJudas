@@ -4,3 +4,4 @@ env/
 Manifest.toml
 figs/
 checkpoints/
+**/__pycache__/

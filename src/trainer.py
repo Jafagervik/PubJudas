@@ -62,12 +62,13 @@ class Trainer:
         self.optimizer.step()
 
     def _run_epoch(self, epoch: int):
-        print(f"Epoch {epoch}")
+        print(f"Epoch {epoch + 1}")
         for source in self.train_loader:
             # source = source.to(self.device)
             self._run_batch(source, epoch)
 
     def train(self, epochs: int):
+        print("Training...")
         self.model.train()
         for epoch in range(epochs):
             self._run_epoch(epoch)
@@ -78,7 +79,7 @@ class Trainer:
         ckp = self.model.state_dict()
         PATH = "final.pt" if final else "checkpoint.pt"
         torch.save(ckp, PATH)
-        print(f"Epoch {epoch} | Training checkpoint saved at {PATH}")
+        print(f"Epoch {epoch + 1} | Training checkpoint saved at {PATH}")
 
     def _load_from_checkpoint(self, path: str):
         ckp = torch.load(path)
@@ -90,7 +91,7 @@ class Trainer:
             for source in self.train_loader:
                 # source = source.to(self.device)
                 outputs = self.model(source)
-                loss = self.loss(outputs, source)
+                loss = self.model.loss(outputs, source)
                 print(f"Test Loss: {loss.item()}")
 
 

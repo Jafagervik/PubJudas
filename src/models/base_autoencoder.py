@@ -3,6 +3,8 @@ from abc import abstractmethod
 import torch.nn as nn
 from torch import Tensor
 
+from customtypes import Any, List, Tensor
+
 
 class BaseVAE(nn.Module):
     def __init__(self) -> None:

@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from customtypes import Any, List, Tensor
 from torchsummary import summary
 
 from base_autoencoder import BaseVAE
-from customtypes import Any, List, Tensor
 
 
 class VAE(BaseVAE):

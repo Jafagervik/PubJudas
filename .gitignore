@@ -5,3 +5,5 @@ Manifest.toml
 figs/
 checkpoints/
 **/__pycache__/
+.vscode/
+__init__.py

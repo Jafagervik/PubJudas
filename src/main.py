@@ -14,7 +14,7 @@ from models.vae import VAE
 
 # from data import PubDASDataset
 from plots import *
-from trainer import MockDataset, Trainer
+from trainer_gpu import MockDataset, Trainer
 from utils import get_config, parse_args, seed_all
 
 DEBUG = 0
@@ -25,14 +25,16 @@ def main():
     config = get_config(args.filename)
 
     seed_all(config["exp_params"]["manual_seed"])
-    device = torch.device("cpu")
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    print(f"Training on {device}")
 
     model = VAE(
         M=config["model_params"]["M"],
         N=config["model_params"]["N"],
         latent_dim=config["model_params"]["latent_dim"],
         hidden_dim=config["model_params"]["hidden_dim"],
-    )
+    ).to(device)
 
     if DEBUG > 1:
         print(model)
@@ -62,6 +64,11 @@ def main():
     trainer = Trainer(model, train_loader, optimizer, device)
 
     trainer.train(config["trainer_params"]["epochs"], **config)
+
+    ls = [losses["loss"].cpu() for losses in trainer.losses]
+
+    plt.plot(ls)
+    plt.show()
 
     # TODO: Anomaly detection
 

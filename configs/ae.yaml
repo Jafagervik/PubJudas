@@ -1,5 +1,5 @@
 model_params:
-  name: "VAE"
+  name: "AE"
   M: 50
   N: 50
   hidden_dim: 512
@@ -21,9 +21,9 @@ exp_params:
 
 trainer_params:
   gpus: [0, 1]
-  epochs: 1
+  epochs: 20
   gradient_clip_val: 0.8
 
 logging_params:
   save_dir: "logs/"
-  name: "VAE"
+  name: "AE"

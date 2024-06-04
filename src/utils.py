@@ -46,7 +46,8 @@ def parse_args():
         dest="filename",
         metavar="FILE",
         help="path to the config file",
-        default="../configs/vae.yaml",
+        #default="../configs/vae.yaml",
+        default=os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'configs', "vae.yaml"))
     )
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--world_size", type=int, default=1)

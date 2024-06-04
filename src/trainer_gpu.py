@@ -38,12 +38,13 @@ class Trainer:
         optimizer: Optimizer,
         device: torch.device,
     ):
-        self.model = model.to(device)
+        self.model = model
         self.train_loader = train_loader
         self.optimizer = optimizer
         self.device = device
         self.best_loss = float("inf")
         self.losses = []
+
 
     def _run_batch(self, source: Tensor, epoch: int, **kwargs):
         self.optimizer.zero_grad()
@@ -68,8 +69,8 @@ class Trainer:
     def _run_epoch(self, epoch: int, **kwargs):
         print(f"Epoch {epoch + 1}")
         for batch in self.train_loader:
-            # source = source.to(self.device)
             for data in batch:
+                data = data.to(self.device)
                 self._run_batch(data, epoch, **kwargs)
             self.optimizer.step()
 

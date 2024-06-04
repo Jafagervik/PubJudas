@@ -31,8 +31,8 @@ class VAE(BaseVAE):
             nn.Sigmoid(),
         )
 
-    def encode(self, input: Tensor) -> List[Tensor]:
-        x = input.reshape(-1, input.shape[0] * input.shape[1])
+    def encode(self, in_data: Tensor) -> List[Tensor]:
+        x = in_data.reshape(-1, in_data.shape[0] * in_data.shape[1])
 
         result = self.encoder(x)
         mu, log_var = self.fc_mu(result), self.fc_var(result)
@@ -55,10 +55,10 @@ class VAE(BaseVAE):
         eps = torch.randn_like(std)
         return eps * std + mu
 
-    def forward(self, input: Tensor) -> List[Tensor]:
-        mu, log_var = self.encode(input)
+    def forward(self, in_data: Tensor) -> List[Tensor]:
+        mu, log_var = self.encode(in_data)
         z = self.reparameterize(mu, log_var)
-        return [self.decode(z), input, mu, log_var]
+        return [self.decode(z), in_data, mu, log_var]
 
     def loss_function(self, *args, **kwargs) -> dict:
         """

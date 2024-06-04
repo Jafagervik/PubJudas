@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from customtypes import Any, List, Tensor
 from torchsummary import summary
 
-from base_autoencoder import BaseVAE
+from customtypes import Any, List, Tensor
+
+from .base_autoencoder import BaseVAE
 
 
 class VAE(BaseVAE):
@@ -16,7 +17,7 @@ class VAE(BaseVAE):
         self.hidden_dim = hidden_dim
         self.fc_mu = nn.Linear(hidden_dim, latent_dim)
         self.fc_var = nn.Linear(hidden_dim, latent_dim)
-        self.rec_loss = nn.MSELoss()
+        self.rec_loss = F.mse_loss
 
         self.encoder = nn.Sequential(
             nn.Linear(M * N, hidden_dim),
@@ -39,8 +40,8 @@ class VAE(BaseVAE):
         return [mu, log_var]
 
     def decode(self, z: Tensor) -> Tensor:
-        result = self.decoder(z)
-        return result.reshape(self.M, self.N)
+        return self.decoder(z)
+        # return result.reshape(self.M, self.N)
 
     def reparameterize(self, mu: Tensor, logvar: Tensor) -> Tensor:
         """
@@ -64,8 +65,12 @@ class VAE(BaseVAE):
         Elbo = Reconstruction + KL Divergence
         """
         recons, input, mu, log_var = args
+        M, N = input.shape
 
-        kld_weight = kwargs["M_N"]  # Account for the minibatch samples from the dataset
+        kld_weight = kwargs["exp_params"][
+            "kld_weight"
+        ]  # Account for the minibatch samples from the dataset
+        # recons = recons.reshape(-1, M * N)
         recons_loss = self.rec_loss(recons, input)
 
         kld_loss = torch.mean(

@@ -1,5 +1,6 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.multiprocessing as mp
@@ -9,11 +10,12 @@ from torch.distributed import destroy_process_group, init_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Dataset
 
+from models.vae import VAE
+
 # from data import PubDASDataset
 from plots import *
 from trainer import MockDataset, Trainer
 from utils import get_config, parse_args, seed_all
-from vae import VAE
 
 DEBUG = 0
 
@@ -59,7 +61,7 @@ def main():
 
     trainer = Trainer(model, train_loader, optimizer, device)
 
-    trainer.train(config["trainer_params"]["epochs"])
+    trainer.train(config["trainer_params"]["epochs"], **config)
 
     # TODO: Anomaly detection
 

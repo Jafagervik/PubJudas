@@ -45,33 +45,40 @@ class Trainer:
         self.best_loss = float("inf")
         self.losses = []
 
-    def _run_batch(self, source: Tensor, epoch: int):
+    def _run_batch(self, source: Tensor, epoch: int, **kwargs):
         self.optimizer.zero_grad()
 
-        outputs = self.model(source)
-        # Loss is a dict
-        loss = self.model.loss_function(outputs, source)
-        self.losses.append(loss.item()["loss"])
-        print(f"Loss: {loss.item()}")
+        M, N = source.shape
 
-        if loss.item() < self.best_loss:
-            self.best_loss = loss.item()
+        source = source.reshape(-1, M * N)
+
+        outputs = self.model(source)
+        # Loss is a list of 4 elems
+        elbo_loss = self.model.loss_function(*outputs, **kwargs)
+
+        self.losses.append(elbo_loss)
+
+        if elbo_loss["loss"] < self.best_loss:
+            self.best_loss = elbo_loss["loss"]
+            print(f"{self.best_loss.item():.3f}")
             self._save_checkpoint(epoch)
 
-        loss.backward()
-        self.optimizer.step()
+        elbo_loss["loss"].backward()
 
-    def _run_epoch(self, epoch: int):
+    def _run_epoch(self, epoch: int, **kwargs):
         print(f"Epoch {epoch + 1}")
-        for source in self.train_loader:
+        for batch in self.train_loader:
             # source = source.to(self.device)
-            self._run_batch(source, epoch)
+            for data in batch:
+                self._run_batch(data, epoch, **kwargs)
+            self.optimizer.step()
 
-    def train(self, epochs: int):
+    def train(self, epochs: int, **kwargs):
         print("Training...")
         self.model.train()
         for epoch in range(epochs):
-            self._run_epoch(epoch)
+            self._run_epoch(epoch, **kwargs)
+        self._save_checkpoint(epochs, final=True)
 
     def _save_checkpoint(self, epoch: int, final: bool = False):
         # TODO: move model to cpu before saving
@@ -93,37 +100,3 @@ class Trainer:
                 outputs = self.model(source)
                 loss = self.model.loss(outputs, source)
                 print(f"Test Loss: {loss.item()}")
-
-
-if __name__ == "__main__":
-    SEED = 1234
-    M = 512
-    EPOCHS = 20
-    N = 10
-
-    torch.manual_seed(SEED)
-    random.seed(SEED)
-
-    # Autoencoder model
-    model = nn.Sequential(
-        nn.Linear(10, 5),
-        nn.ReLU(),
-        nn.Linear(5, 3),
-        nn.ReLU(),
-        nn.Linear(3, 5),
-        nn.ReLU(),
-        nn.Linear(5, 10),
-        nn.Sigmoid(),
-    )
-
-    data = [torch.randn(10) for _ in range(100)]
-    dataset = MockDataset(data)
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-
-    train_loader = DataLoader(dataset, batch_size=10, shuffle=False)
-    device = torch.device("cpu")
-    loss = nn.MSELoss()
-    trainer = Trainer(model, train_loader, optimizer, device, loss)
-
-    trainer.train(EPOCHS)

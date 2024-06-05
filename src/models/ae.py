@@ -6,11 +6,13 @@ from torchsummary import summary
 
 from utils import reshape_matrix
 
-
-class Encoder(nn.Module):
-    def __init__(self, dims: list[int], act=nn.ReLU()):
+class AE(nn.Module):
+    def __init__(self, dims: list[int], loss: str ="mse"):
         super().__init__()
-        self.net = nn.Sequential(
+        assert len(dims) == 4, "Too many sizes"
+        act = nn.ReLU()
+
+        self.encoder = nn.Sequential(
             nn.Linear(dims[0], dims[1]),
             act,
             nn.Linear(dims[1], dims[2]),
@@ -19,16 +21,9 @@ class Encoder(nn.Module):
             act,
         )
 
-    def forward(self, x):
-        x = x.reshape(-1, x.shape[0] * x.shape[1])
-        x = self.net(x)
-        return x
+        dims = dims[::-1]
 
-
-class Decoder(nn.Module):
-    def __init__(self, dims: list[int], act=nn.ReLU(inplace=True)):
-        super().__init__()
-        self.net = nn.Sequential(
+        self.decoder = nn.Sequential(
             nn.Linear(dims[0], dims[1]),
             act,
             nn.Linear(dims[1], dims[2]),
@@ -36,22 +31,10 @@ class Decoder(nn.Module):
             nn.Linear(dims[2], dims[3]),
             nn.Sigmoid(),
         )
+        self.loss = nn.MSELoss() if loss == "mse" else nn.MAELoss()
 
     def forward(self, x):
-        return self.net(x)
-
-
-class AE(nn.Module):
-
-    def __init__(self, dims: list[int]):
-        super().__init__()
-        assert len(dims) == 4, "Too many sizes"
-
-        self.encoder = Encoder(dims)
-        self.decoder = Decoder(dims[::-1])
-        self.loss = nn.MSELoss()
-
-    def forward(self, x):
+        x = x.reshape(-1, x.shape[0] * x.shape[1])
         return self.decoder(self.encoder(x))
 
     def criterion(self, x, x_hat):
